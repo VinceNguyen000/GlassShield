@@ -33,46 +33,91 @@ Text/search input · File upload · Selection menus · Filters/sliders · Tables
 
 ---
 
+---
+
 ## 🚀 How to Run
 
-### Prerequisites
-- Python 3.10+
-- EgoBlur model weights (see **Data** section below)
+### ⚠️ Important: Read Before Running!
+To avoid common runtime issues:
+1. **Always use the virtual environment (`.venv`)**: Running `streamlit` directly in your base system terminal may cause `ModuleNotFoundError` or use incorrect PyTorch builds.
+2. **Port 8501 in use?**: If another Streamlit instance is running, kill it or specify a different port (`--server.port 8502`).
+3. **Environment Variables (`.env`)**: Optional. GlassShield works 100% offline out-of-the-box. To enable live Gemini cloud explanations, create a `.env` file with `GEMINI_API_KEY=your_key_here`.
 
-### Setup
+---
+
+### Step-by-Step Setup
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/GlassShield.git
+git clone https://github.com/VinceNguyen000/GlassShield.git
 cd GlassShield
 
 # 2. Create and activate virtual environment
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS/Linux
 
-# 3. Install dependencies
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.\.venv\Scripts\activate.bat
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. Install core dependencies
 pip install -r requirements.txt
 
-# 4. Install EgoBlur (editable install from separate repo)
+# 4. Install EgoBlur (editable install from sibling repository)
 git clone https://github.com/facebookresearch/EgoBlur.git ../EgoBlur
 pip install -e ../EgoBlur
 
-# 5. Download model weights (see Data section below)
-# Place ego_blur_face_gen1.jit and ego_blur_lp_gen1.jit in models/
+# 5. Place model weights
+# Ensure EgoBlur Gen1 TorchScript models are in the models/ directory:
+#   models/ego_blur_face_gen1.jit
+#   models/ego_blur_lp_gen1.jit
 
-# 6. Launch the application
-streamlit run app.py --server.port 8501
+# 6. (Optional) Configure .env file
+# Create a .env file in the project root:
+echo GEMINI_API_KEY=your_key_here > .env
 ```
 
-Open **http://localhost:8501** in your browser.
+---
 
-### Run Tests
+### 🖥️ Launching the Application
+
+**Recommended command (runs directly via venv python):**
+```powershell
+.\.venv\Scripts\streamlit run app.py --server.port 8501
+```
+
+Once running, navigate to: **`http://localhost:8501`**
+
+#### 🔧 Troubleshooting: Port 8501 is already in use
+If you see `Port 8501 is not available`, an existing background process is occupying it. Run:
+```powershell
+# 1. Find process listening on port 8501
+netstat -ano | findstr :8501
+
+# 2. Kill the process by PID (replace <PID> with number from rightmost column)
+taskkill /PID <PID> /F
+
+# 3. Relaunch
+.\.venv\Scripts\streamlit run app.py --server.port 8501
+```
+
+---
+
+### 🧪 Run Automated Tests
+
+To verify edge vision inference, Policy RAG, and the `TelemetryTuple` contract:
 
 ```bash
+# Run all 8 test cases
 python -m unittest tests/test_human_ai_workflow.py
-# Expected: Ran 8 tests in ~90s ... OK
+
+# Or via venv python:
+.\.venv\Scripts\python -m unittest tests/test_human_ai_workflow.py
+# Expected output: Ran 8 tests in ~80s ... OK
 ```
+
 
 ---
 

@@ -1,6 +1,8 @@
 # Agent memory and operational rules
 rules.md
 memory.md
+AGENTS.md
+agents.md
 
 # Python
 __pycache__/
@@ -43,8 +45,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Challenge task sheets (kept local)
+# Challenge task sheets & presentation materials (kept local)
 tasks/
+presentation/
 
 # Telemetry event logs (runtime generated)
 telemetry/*.jsonl
