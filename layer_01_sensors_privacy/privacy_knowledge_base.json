@@ -1,0 +1,74 @@
+[
+  {
+    "id": "POL-SITARA-001",
+    "title": "SITARA Egocentric Bystander Consent Taxonomy: Tier 2 (Incidental Bystander)",
+    "category": "Bystander Consent",
+    "jurisdiction": "Smart Wearable Research (SYSNET-LUMS)",
+    "keywords": ["face", "bystander", "public", "incidental", "street", "crowd", "consent"],
+    "summary": "Incidental bystanders captured in public or semi-public spaces without explicit consent must have visual biometrics (facial geometry) obfuscated prior to stream dispatch or cloud persistence.",
+    "rule_text": "In egocentric recordings where individuals appear incidentally in the field of view without proactive consent, smart glasses software must execute on-device blurring of the facial bounding box to satisfy bystander privacy rights without degrading primary wearer task contextual utility.",
+    "recommended_action": "MASK_PII",
+    "default_gate_verdict": "USER_CONFIRMATION_REQUIRED",
+    "risk_level": "HIGH"
+  },
+  {
+    "id": "POL-GDPR-ART9",
+    "title": "GDPR Article 9: Processing of Special Categories of Personal Data (Biometrics)",
+    "category": "Regulatory Statute",
+    "jurisdiction": "European Union (EU/EEA)",
+    "keywords": ["gdpr", "biometric", "facial", "face", "identification", "article 9", "special category"],
+    "summary": "Processing of biometric data for the purpose of uniquely identifying a natural person is prohibited unless explicit consent or explicit legal exemption applies.",
+    "rule_text": "Facial imagery processed by wearable sensor systems constitutes biometric personal data under GDPR Art 9(1). Without an Article 9(2) exception (e.g., explicit consent), raw biometric features cannot be transmitted to external servers or cloud agents. On-device redaction renders the stream anonymous under Recital 26.",
+    "recommended_action": "MASK_PII",
+    "default_gate_verdict": "USER_CONFIRMATION_REQUIRED",
+    "risk_level": "CRITICAL"
+  },
+  {
+    "id": "POL-CCPA-LP",
+    "title": "California Consumer Privacy Act (CCPA/CPRA) § 1798.140: Vehicle Identifiers",
+    "category": "Regulatory Statute",
+    "jurisdiction": "California, USA",
+    "keywords": ["license plate", "vehicle", "car", "ccpa", "cpra", "identifier", "transport"],
+    "summary": "Vehicle license plates uniquely link to natural persons and are protected personal identifiers under California privacy law.",
+    "rule_text": "Unique personal identifiers include vehicle identification numbers and license plate numbers capable of associating with a specific consumer or household. Smart wearable cameras recording vehicular traffic must mask license plates before metadata or imagery is indexed or shared.",
+    "recommended_action": "MASK_PII",
+    "default_gate_verdict": "ALLOW",
+    "risk_level": "MEDIUM"
+  },
+  {
+    "id": "POL-ENT-CONF",
+    "title": "Enterprise Confidentiality & Restricted Facility Policy (Section 4.2)",
+    "category": "Enterprise Compliance",
+    "jurisdiction": "Enterprise Deployment",
+    "keywords": ["enterprise", "office", "facility", "meeting", "cleanroom", "confidential", "visitor"],
+    "summary": "Smart glasses worn within corporate facilities or conference rooms must prohibit raw recording and immediately block transmission when unidentified visitors or sensitive documents are present.",
+    "rule_text": "Within enterprise-designated zones, any camera feed capturing human attendees or proprietary displays requires automated redaction. If the confidence of visual anonymization falls below 80%, the system must halt transmission and trigger mandatory wearer confirmation before proceeding.",
+    "recommended_action": "BLOCK_IF_UNCERTAIN",
+    "default_gate_verdict": "USER_CONFIRMATION_REQUIRED",
+    "risk_level": "HIGH"
+  },
+  {
+    "id": "POL-CLEAN-ENV",
+    "title": "GlassShield Standard Stream Policy: Low-Risk Non-PII Scene",
+    "category": "Standard Operations",
+    "jurisdiction": "Global / Default",
+    "keywords": ["nature", "object", "landscape", "indoor", "clean", "no pii", "empty"],
+    "summary": "Frames containing zero detected faces and zero detected license plates are classified as low risk and permitted to flow without blurring.",
+    "rule_text": "When on-device detection algorithms verify with high confidence that no facial regions or license plates exist in the frame buffer, content preservation is maintained to optimize latency and visual clarity for downstream multimodal assistant tasks.",
+    "recommended_action": "PRESERVE_CONTENT",
+    "default_gate_verdict": "ALLOW",
+    "risk_level": "LOW"
+  },
+  {
+    "id": "POL-SITARA-UNCERTAIN",
+    "title": "SITARA Low-Confidence & Edge-Case Safeguard (Tier 3 Safeguard)",
+    "category": "Edge-Case Handling",
+    "jurisdiction": "Smart Wearable Research (SYSNET-LUMS)",
+    "keywords": ["low confidence", "obscured", "partial", "blur", "edge case", "night", "lighting", "distant"],
+    "summary": "Marginal or low-confidence face detections in challenging lighting or partial occlusions require conservative fail-safe handling and human review.",
+    "rule_text": "If face detector confidence is marginal (between 0.25 and 0.50) due to low illumination, extreme angles, or partial occlusions, the system must notify the wearer of uncertainty. Default policy mandates asking the user for confirmation rather than risking an unmasked bystander leak.",
+    "recommended_action": "FLAG_UNCERTAINTY",
+    "default_gate_verdict": "USER_CONFIRMATION_REQUIRED",
+    "risk_level": "HIGH"
+  }
+]

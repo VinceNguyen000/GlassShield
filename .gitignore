@@ -1,0 +1,50 @@
+# Agent memory and operational rules
+rules.md
+memory.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data & Model weights (prevent committing large binaries)
+data/
+models/
+*.pt
+*.pth
+*.onnx
+*.bin
+*.tar.gz
+*.zip
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Challenge task sheets (kept local)
+tasks/
+
+# Telemetry event logs (runtime generated)
+telemetry/*.jsonl
