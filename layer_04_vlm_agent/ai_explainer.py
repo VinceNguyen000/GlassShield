@@ -113,3 +113,116 @@ class AIExplainer:
             "top_policy_title": top_policy["title"] if top_policy else "None",
             "statute_citations": [p["id"] for p in retrieved_policies],
         }
+
+    def generate_network_meta_explanation(
+        self,
+        event_timeline_str: str,
+        events: List[Any],
+        retrieved_policies: List[Dict[str, Any]],
+        optical_presence: Dict[str, Any],
+        mean_uncertainty: float,
+        abstention_count: int,
+        flow_summary: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Synthesizes encrypted wireless metadata, operational event sequences,
+        and retrieved policy rules into a defensible, audit-ready explanation.
+        Enforces ADR-006: Strictly separates observable physical/network events
+        from subjective conclusions regarding human intent.
+        """
+        top_policy = retrieved_policies[0] if retrieved_policies else None
+        event_names = [getattr(e, "activity", str(e)) for e in events]
+        has_abstained = abstention_count > 0 or any("UNKNOWN" in name for name in event_names)
+        has_photo_ai = any("PHOTO" in name for name in event_names) and any("AI" in name for name in event_names)
+        has_video_stream = any("STREAM" in name or "VIDEO" in name for name in event_names)
+        has_sync = any("SYNC" in name for name in event_names)
+
+        # 1. Action Gate Verdict Determination
+        if has_abstained:
+            recommended_verdict = "USER_CONFIRMATION_REQUIRED"
+            risk_level = "HIGH"
+            gate_reasoning = (
+                "Open-set uncertainty or ambiguous burst signatures detected. Automated decision "
+                "withheld to eliminate false accusations. Human auditor inspection required."
+            )
+        elif top_policy and top_policy.get("id") == "POL-EXAM-3.2" and has_photo_ai:
+            recommended_verdict = "BLOCK"
+            risk_level = "CRITICAL"
+            gate_reasoning = (
+                "Observed operational sequence [PHOTO -> AI_INTERACTION -> RESPONSE] is inconsistent "
+                f"with {top_policy['title']} (Sec 3.2). Transmission gate engaged; proctor alert issued."
+            )
+        elif top_policy and top_policy.get("id") == "POL-LAB-REC-01" and has_video_stream:
+            recommended_verdict = "BLOCK"
+            risk_level = "CRITICAL"
+            gate_reasoning = (
+                f"Continuous high-throughput uplink video stream is inconsistent with Cleanroom Policy (Sec 4.1). "
+                "Outbound flow blocked."
+            )
+        elif top_policy and top_policy.get("id") == "POL-OPEN-SYNC-05" or (has_sync and not has_photo_ai and not has_video_stream):
+            recommended_verdict = "ALLOW"
+            risk_level = "LOW"
+            gate_reasoning = (
+                "Non-interactive background cloud media synchronization identified. Consistent with "
+                "Standard Device Operations. Traffic permitted."
+            )
+        else:
+            recommended_verdict = "ALLOW"
+            risk_level = "LOW"
+            gate_reasoning = "Traffic metadata consistent with standard baseline operations."
+
+        # 2. Construct Defensible Grounded Narrative (No subjective intent accusations)
+        narrative_paragraphs = [
+            f"### 📡 Objective Operational Sequence\n"
+            f"**Inferred Meta-Activity Timeline**: `{event_timeline_str}`\n"
+            f"- **Mean Calibrated Uncertainty**: **{mean_uncertainty * 100:.1f}%** | "
+            f"**Abstentions**: **{abstention_count}**\n"
+            f"- **Evidence Basis**: Encrypted packet lengths, inter-arrival timing, burst pacing, and directional flow metrics."
+        ]
+
+        # Optical Presence Modality integration (Ye et al., HotMobile 2026)
+        if optical_presence.get("enabled"):
+            if optical_presence.get("detected"):
+                narrative_paragraphs.append(
+                    f"**Optical Modality Corroboration**: Non-content optical presence signature confirmed "
+                    f"smart glasses in active field (confidence: **{optical_presence.get('confidence', 0.94) * 100:.0f}%**; "
+                    f"Waveguide specular light reflection per *Ye et al., HotMobile 2026*). "
+                    f"*Note: Zero visual scene imagery was inspected or stored.*"
+                )
+            else:
+                narrative_paragraphs.append(
+                    "**Optical Modality**: No optical waveguide presence signature detected for adjacent devices."
+                )
+
+        # Policy Grounding & Citation
+        if top_policy:
+            narrative_paragraphs.append(
+                f"### 📚 Policy Grounding: [{top_policy['id']}]\n"
+                f"**Document & Section**: *{top_policy['title']}* ({top_policy['jurisdiction']})\n\n"
+                f"> *\"{top_policy['rule_text']}\"*\n\n"
+                f"**Consistency Analysis**: {gate_reasoning}"
+            )
+        else:
+            narrative_paragraphs.append(
+                "**Policy Grounding**: No restrictive policy citations matched current operational envelope."
+            )
+
+        # Ethical Boundary Notice
+        narrative_paragraphs.append(
+            "🔒 **Defensible Reasoning Notice**: GlassShield evaluates objective device operational sequences against explicit rules. "
+            "It does **not** draw subjective conclusions regarding wearer intent, academic dishonesty, or captured content semantics. "
+            "All consequential interventions require human review."
+        )
+
+        return {
+            "narrative": "\n\n".join(narrative_paragraphs),
+            "recommended_verdict": recommended_verdict,
+            "gate_reasoning": gate_reasoning,
+            "risk_level": risk_level,
+            "mean_uncertainty": mean_uncertainty,
+            "abstention_count": abstention_count,
+            "top_policy_id": top_policy["id"] if top_policy else "NONE",
+            "top_policy_title": top_policy["title"] if top_policy else "None",
+            "statute_citations": [p["id"] for p in retrieved_policies],
+        }
+

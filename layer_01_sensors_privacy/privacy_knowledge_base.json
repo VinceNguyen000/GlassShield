@@ -70,5 +70,41 @@
     "recommended_action": "FLAG_UNCERTAINTY",
     "default_gate_verdict": "USER_CONFIRMATION_REQUIRED",
     "risk_level": "HIGH"
+  },
+  {
+    "id": "POL-EXAM-3.2",
+    "title": "Academic Integrity & Examination Technology Policy (Section 3.2)",
+    "category": "Academic Integrity",
+    "jurisdiction": "Institutional Academic Council",
+    "keywords": ["exam", "academic", "cheating", "closed-book", "photo", "camera", "ai", "interaction", "assistant", "external communication"],
+    "summary": "External electronic communication, unauthorized photo capture of assessment materials, and generative AI query assistance are prohibited during closed-book evaluations.",
+    "rule_text": "During proctored examinations, wearable devices must not initiate optical capture of test prompts, transmit unauthorized uplink queries, or receive generative AI responses. Detection of photo capture followed by conversational AI exchange during an active evaluation window constitutes an operational policy conflict requiring immediate proctor review.",
+    "recommended_action": "BLOCK_AND_FLAG_PROCTOR",
+    "default_gate_verdict": "BLOCK",
+    "risk_level": "CRITICAL"
+  },
+  {
+    "id": "POL-LAB-REC-01",
+    "title": "Restricted R&D Cleanroom Optical & Streaming Policy (Section 4.1)",
+    "category": "Corporate IP Protection",
+    "jurisdiction": "Advanced R&D Facility Security",
+    "keywords": ["cleanroom", "lab", "streaming", "video", "recording", "proprietary", "r&d", "prototype"],
+    "summary": "Live video streaming, continuous optical recording, or high-throughput telemetry from smart glasses within designated hardware fabrication cleanrooms is strictly restricted.",
+    "rule_text": "Within designated hardware cleanrooms and confidential test bays, continuous optical streaming or persistent high-throughput uplink flows (>800 kbps) are prohibited without prior authorization. Wearers must disconnect transmission streams while in restricted cleanroom zones.",
+    "recommended_action": "BLOCK_STREAM",
+    "default_gate_verdict": "BLOCK",
+    "risk_level": "CRITICAL"
+  },
+  {
+    "id": "POL-OPEN-SYNC-05",
+    "title": "Peripheral Cloud Media Synchronization Standard (Section 1.4)",
+    "category": "Standard Device Operations",
+    "jurisdiction": "Wearable Device Architecture Standard",
+    "keywords": ["sync", "upload", "cloud", "media", "background", "photo sync", "library"],
+    "summary": "Asynchronous background media synchronization and thumbnail uploads are permitted when not in a restricted zone.",
+    "rule_text": "Periodic background synchronization of user-captured media to cloud storage is an authorized device operation outside restricted examination or proprietary facility intervals. System should confirm non-interactive batch transfer characteristics before permitting dispatch.",
+    "recommended_action": "ALLOW_BACKGROUND_SYNC",
+    "default_gate_verdict": "ALLOW",
+    "risk_level": "LOW"
   }
 ]

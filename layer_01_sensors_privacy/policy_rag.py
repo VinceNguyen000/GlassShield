@@ -35,15 +35,18 @@ class PolicyRAG:
         query: str = "",
         detected_classes: Optional[List[str]] = None,
         min_confidence: float = 0.0,
+        event_sequence: Optional[List[str]] = None,
         top_k: int = 3,
     ) -> List[Dict[str, Any]]:
         """
-        Retrieves top-k relevant privacy policies given context and optional search query.
+        Retrieves top-k relevant privacy and operational policies given context,
+        detected classes, inferred meta-activity sequence, and optional search query.
         """
         if not self.knowledge_base:
             return []
 
         detected_classes = detected_classes or []
+        event_sequence = event_sequence or []
         query_tokens = set(self._tokenize(query))
 
         # Augment query tokens with detected context
@@ -51,10 +54,18 @@ class PolicyRAG:
             query_tokens.update(["face", "bystander", "biometric", "facial"])
         if "license_plate" in detected_classes or "lp" in detected_classes:
             query_tokens.update(["license", "plate", "vehicle", "car", "identifier"])
-        if not detected_classes and not query:
+        if not detected_classes and not query and not event_sequence:
             query_tokens.update(["nature", "clean", "low-risk", "empty", "no", "pii"])
         if min_confidence > 0.0 and min_confidence < 0.50:
             query_tokens.update(["uncertain", "low", "confidence", "obscured", "partial"])
+
+        # Augment query tokens with inferred operational event sequence
+        if any("PHOTO" in act for act in event_sequence) and any("AI" in act for act in event_sequence):
+            query_tokens.update(["exam", "academic", "photo", "camera", "ai", "interaction", "assistant", "proctored"])
+        elif any("STREAM" in act or "VIDEO" in act for act in event_sequence):
+            query_tokens.update(["streaming", "video", "recording", "cleanroom", "lab", "continuous"])
+        elif any("SYNC" in act for act in event_sequence):
+            query_tokens.update(["sync", "upload", "media", "background", "cloud"])
 
         scored_policies = []
         for policy in self.knowledge_base:
@@ -87,10 +98,16 @@ class PolicyRAG:
                 base_score += 0.35
             if ("license_plate" in detected_classes or "lp" in detected_classes) and ("license plate" in policy.get("keywords", []) or "vehicle" in policy.get("keywords", [])):
                 base_score += 0.35
-            if not detected_classes and policy.get("id") == "POL-CLEAN-ENV":
+            if not detected_classes and not event_sequence and policy.get("id") == "POL-CLEAN-ENV":
                 base_score += 0.80
             if min_confidence > 0.0 and min_confidence < 0.50 and policy.get("id") == "POL-SITARA-UNCERTAIN":
                 base_score += 0.90
+            if any("PHOTO" in act for act in event_sequence) and any("AI" in act for act in event_sequence) and policy.get("id") == "POL-EXAM-3.2":
+                base_score += 0.85
+            if any("STREAM" in act or "VIDEO" in act for act in event_sequence) and policy.get("id") == "POL-LAB-REC-01":
+                base_score += 0.85
+            if any("SYNC" in act for act in event_sequence) and policy.get("id") == "POL-OPEN-SYNC-05":
+                base_score += 0.75
 
             normalized_score = min(round(base_score, 3), 1.0)
             result_item = dict(policy)

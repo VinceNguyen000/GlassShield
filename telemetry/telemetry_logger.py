@@ -33,6 +33,11 @@ class NetworkFlowTelemetry:
     mean_iat_ms: float = 0.0
     flow_classification: str = "normal"  # "normal" | "abnormal_leak" | "unknown"
     classifier_confidence: float = 0.95
+    inferred_activity_sequence: List[str] = field(default_factory=list)
+    optical_presence_detected: bool = False
+    optical_confidence: float = 0.0
+    abstention_triggered: bool = False
+    calibrated_uncertainty: float = 0.0
 
 
 @dataclass
