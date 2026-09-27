@@ -518,21 +518,209 @@ else:
         context_description=visual_scenario,
     )
 
-    col_v1, col_v2, col_v3 = st.columns(3)
-    with col_v1:
-        st.metric("Processing Latency", f"{results['filter_latency_ms']:.1f} ms", delta="< 33 ms target")
-    with col_v2:
-        st.metric("Visual PII Detected", f"{len(results['detected_entities'])} Entities", f"Faces: {results['faces_detected']} | Plates: {results['plates_detected']}")
-    with col_v3:
-        st.metric("Action Gate Verdict", f"{explanation['recommended_verdict']}")
+    # Build Visual Telemetry Contract
+    current_visual_event = TelemetryTuple(
+        sensor_trigger=SensorTrigger(source="camera", trigger_type="continuous_stream"),
+        privacy_layer=PrivacyLayerTelemetry(
+            faces_detected=results["faces_detected"],
+            plates_detected=results["plates_detected"],
+            pii_masked=results["pii_masked"],
+            filter_latency_ms=results["filter_latency_ms"],
+        ),
+        network_flow=NetworkFlowTelemetry(
+            sni_domain="edge.glassshield.internal",
+            flow_classification="normal" if results["pii_masked"] or not results["detected_entities"] else "abnormal_leak",
+        ),
+        vlm_agent=VlmAgentTelemetry(
+            model_id="EgoBlur-Gen1-TorchScript",
+            prompt_digest=f"sha256-{hash(visual_scenario) & 0xffffffff:08x}",
+        ),
+        action_gate=ActionGateTelemetry(
+            verification_verdict=explanation["recommended_verdict"],
+            reasoning=explanation["gate_reasoning"],
+        ),
+    )
 
-    c_img1, c_img2 = st.columns(2)
-    with c_img1:
-        st.markdown("**Original Egocentric Frame + EgoBlur Bounding Boxes**")
-        st.image(results["overlay_image"], use_container_width=True)
-    with c_img2:
-        st.markdown(f"**Anonymized Privacy Stream ({blur_style})**")
-        st.image(results["anonymized_image"], use_container_width=True)
+    # 4 Dynamic Tabs for Visual Privacy
+    v_tab1, v_tab2, v_tab3, v_tab4 = st.tabs([
+        "📸 Visual Evidence & Side-by-Side Review",
+        "🧠 Grounded AI Explanation & Policy RAG",
+        "📋 Detection Inventory & Telemetry Contract",
+        "🤝 Human Review, Refinement & FPR Benchmark",
+    ])
 
-    st.markdown("### 📚 Grounded Regulatory Explanation")
-    st.markdown(explanation["narrative"])
+    # TAB 1: Visual Evidence
+    with v_tab1:
+        st.subheader("Visual Evidence Verification")
+        c_img1, c_img2 = st.columns(2)
+        with c_img1:
+            st.markdown("**Original Egocentric Frame + EgoBlur Bounding Boxes**")
+            st.image(results["overlay_image"], use_container_width=True)
+            st.caption("Orange boxes = Bystander Face, Blue/Cyan = License Plate.")
+
+        with c_img2:
+            st.markdown(f"**Anonymized Privacy Stream ({blur_style})**")
+            st.image(results["anonymized_image"], use_container_width=True)
+            st.caption("Rendered on-device before any network dispatch or cloud persistence.")
+
+        st.markdown("### 🏷️ Provenance & Device Verification")
+        p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+        with p_col1:
+            st.text(f"Device Target: {results['device'].upper()}")
+        with p_col2:
+            st.text(f"Resolution: {results['image_dimensions']['width']}x{results['image_dimensions']['height']}")
+        with p_col3:
+            st.text(f"Model: EgoBlur Gen1 JIT")
+        with p_col4:
+            st.text(f"Event ID: {current_visual_event.event_id[:8]}...")
+
+    # TAB 2: Grounded AI Explanation & Policy RAG
+    with v_tab2:
+        st.subheader("Grounded Regulatory & Privacy Explanation")
+        st.markdown(explanation["narrative"])
+
+        st.markdown("---")
+        st.subheader("📚 Retrieved Policy Evidence (RAG Corpus)")
+        if not retrieved_policies:
+            st.warning("No regulatory policies matched current context.")
+        else:
+            for idx, pol in enumerate(retrieved_policies, 1):
+                with st.expander(
+                    f"#{idx}: [{pol['id']}] {pol['title']} (Relevance: {pol['relevance_score'] * 100:.0f}%)",
+                    expanded=(idx == 1),
+                ):
+                    st.markdown(f"**Jurisdiction**: `{pol['jurisdiction']}` | **Category**: `{pol['category']}` | **Risk Level**: `{pol['risk_level']}`")
+                    st.markdown(f"**Summary**: {pol['summary']}")
+                    st.markdown(f"**Exact Rule Citation**: *\"{pol['rule_text']}\"*")
+                    st.markdown(f"**Recommended Action**: `{pol['recommended_action']}` | **Default Gate Verdict**: `{pol['default_gate_verdict']}`")
+
+    # TAB 3: Detection Inventory & Telemetry Contract
+    with v_tab3:
+        st.subheader("Detection Entity Inventory")
+        if not results["detected_entities"]:
+            st.info("No PII detected in this frame.")
+        else:
+            df_entities = pd.DataFrame([
+                {
+                    "ID": e["entity_id"],
+                    "Class": e["class_name"],
+                    "Confidence": f"{e['confidence'] * 100:.1f}%",
+                    "Bounding Box [x1, y1, x2, y2]": str(e["box"]),
+                    "Frame Area %": f"{e['area_pct']}%",
+                    "Source": e["detection_source"],
+                    "Status": "Masked",
+                }
+                for e in results["detected_entities"]
+            ])
+            st.dataframe(df_entities, use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("📄 Standardized Cross-Layer Telemetry Tuple")
+        st.caption("Conforms strictly to the `TelemetryTuple` contract.")
+        st.json(current_visual_event.to_dict())
+
+        st.download_button(
+            "💾 Export Telemetry Event JSON",
+            data=current_visual_event.to_json(indent=2),
+            file_name=f"telemetry_event_{current_visual_event.event_id[:8]}.json",
+            mime="application/json",
+        )
+
+    # TAB 4: Human Review, Refinement & FPR Benchmark
+    with v_tab4:
+        st.subheader("Human Review & Feedback Gate")
+        st.write(
+            "The human remains in control. Review the AI's proposal, correct misdetections, "
+            "or refine bounding boxes to uphold safety and regulatory accountability."
+        )
+
+        h_col1, h_col2 = st.columns(2)
+        with h_col1:
+            st.markdown("#### 1. Action Gate Verdict Override")
+            selected_gate_override = st.selectbox(
+                "Verdict Decision",
+                ["ALLOW", "BLOCK", "USER_CONFIRMATION_REQUIRED"],
+                index=["ALLOW", "BLOCK", "USER_CONFIRMATION_REQUIRED"].index(explanation["recommended_verdict"]),
+            )
+            human_notes = st.text_area(
+                "Auditor / Wearer Review Notes",
+                value="",
+                placeholder="Document rationale (e.g. 'Confirmed bystander anonymization', 'Overrode false positive on statue')...",
+            )
+
+        with h_col2:
+            st.markdown("#### 2. Detection Quality Audit")
+            audit_classification = st.radio(
+                "Classify Detection Result",
+                [
+                    "Correct (True Positive / True Negative)",
+                    "False Positive (Flag Non-PII Box)",
+                    "False Negative (Missed PII)",
+                ],
+                index=0,
+            )
+
+            st.markdown("#### 3. Manual Bounding Box Refinement (Add Missing Box)")
+            with st.expander("➕ Add Missing Box Coordinates"):
+                c_x1, c_y1 = st.columns(2)
+                with c_x1:
+                    man_x1 = st.number_input("X1", value=0, min_value=0, max_value=results["image_dimensions"]["width"])
+                    man_y1 = st.number_input("Y1", value=0, min_value=0, max_value=results["image_dimensions"]["height"])
+                with c_y1:
+                    man_x2 = st.number_input("X2", value=100, min_value=0, max_value=results["image_dimensions"]["width"])
+                    man_y2 = st.number_input("Y2", value=100, min_value=0, max_value=results["image_dimensions"]["height"])
+
+                if st.button("Add Box to Masking List"):
+                    if man_x2 > man_x1 and man_y2 > man_y1:
+                        st.session_state.manual_boxes.append([man_x1, man_y1, man_x2, man_y2])
+                        st.success(f"Added manual box [{man_x1}, {man_y1}, {man_x2}, {man_y2}]. Re-running...")
+                        st.rerun()
+                    else:
+                        st.error("Invalid coordinates: X2 must be > X1 and Y2 must be > Y1.")
+
+        if st.button("✅ Submit Human Review & Log Event"):
+            status_map = {
+                "Correct (True Positive / True Negative)": "APPROVED",
+                "False Positive (Flag Non-PII Box)": "CORRECTED_FP",
+                "False Negative (Missed PII)": "CORRECTED_FN",
+            }
+            review_status = status_map[audit_classification]
+            current_visual_event.human_review_status = review_status
+            current_visual_event.human_notes = human_notes
+            current_visual_event.action_gate.verification_verdict = selected_gate_override
+
+            st.session_state.telemetry_store.log(current_visual_event)
+            st.session_state.session_reviews.append({
+                "timestamp": current_visual_event.timestamp,
+                "scenario": visual_scenario,
+                "verdict": selected_gate_override,
+                "audit_status": review_status,
+                "notes": human_notes,
+                "latency_ms": results["filter_latency_ms"],
+            })
+            st.success(f"Event {current_visual_event.event_id[:8]} logged with status '{review_status}' and verdict '{selected_gate_override}'!")
+            st.rerun()
+
+        st.markdown("---")
+        st.subheader("📊 Session Benchmark & FPR Ledger")
+        metrics = st.session_state.telemetry_store.get_metrics_summary()
+
+        b_col1, b_col2, b_col3, b_col4 = st.columns(4)
+        with b_col1:
+            st.metric("Logged Events", metrics["total_events"])
+        with b_col2:
+            st.metric("Avg Latency", f"{metrics['mean_latency_ms']} ms")
+        with b_col3:
+            st.metric("Flagged False Positives", metrics["flagged_false_positives"])
+        with b_col4:
+            st.metric(
+                "False Positive Rate (FPR)",
+                f"{metrics['false_positive_rate']}%",
+                delta="Target < 5.0%",
+                delta_color="normal" if metrics["false_positive_rate"] < 5.0 else "inverse",
+            )
+
+        if st.session_state.session_reviews:
+            st.markdown("**Review Audit History**")
+            st.dataframe(pd.DataFrame(st.session_state.session_reviews), use_container_width=True)
+
