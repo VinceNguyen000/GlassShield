@@ -20,24 +20,10 @@
 * **Institution**: University of Missouri-Kansas City (UMKC) — School of Science & Engineering
 * **Author / Team Member**: Vien (Vince) Nguyen
 * **Repository**: [https://github.com/VinceNguyen000/GlassShield](https://github.com/VinceNguyen000/GlassShield)
-* **Competition**: Hack-A-Roo 2026 Poster Competition & Judging
+* **Competition**: Hack-A-Roo 2026
 
 ---
 
-## 🎯 Challenge 5 Deliverables Quick-Links
-
-| Deliverable | Format / Specs | File Link | Description |
-|---|---|---|---|
-| **Project Poster (Persuading Sapphire PDF)** | 48 × 36-Inch Landscape PDF | [`poster/glassshield_poster_persuading_sapphire_48x36.pdf`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/poster/glassshield_poster_persuading_sapphire_48x36.pdf) | Official SciPosters Persuading Sapphire single-page print PDF |
-| **Project Poster (Persuading Sapphire PPTX)** | 48 × 36-Inch Landscape PPTX | [`poster/glassshield_poster_persuading_sapphire_48x36.pptx`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/poster/glassshield_poster_persuading_sapphire_48x36.pptx) | Editable PowerPoint poster populated directly into `persuadingsapphire_48x36.pptx` |
-| **Project Poster (Print PDF)** | 48 × 36-Inch Landscape PDF | [`poster/glassshield_poster_48x36.pdf`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/poster/glassshield_poster_48x36.pdf) | High-resolution, single-page print PDF formatted for Hack-A-Roo & CS 5542 |
-| **Project Poster (Editable PPTX)** | 48 × 36-Inch Landscape PPTX | [`poster/glassshield_poster_48x36.pptx`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/poster/glassshield_poster_48x36.pptx) | Fully editable PowerPoint template with shapes, text boxes, and figures |
-| **Demo Video Storyboard** | Production Script (3:00) | [`demo_video/demo_video_script_storyboard.md`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/demo_video/demo_video_script_storyboard.md) | Word-for-word spoken transcript, visual cues, and UI click sequences |
-| **Demo Video Recording Guide** | Step-by-Step Guide | [`demo_video/demo_recording_guide.md`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/demo_video/demo_recording_guide.md) | OBS Studio, Game Bar (`Win+Alt+R`), and Zoom recording walkthrough |
-| **Demo Video Slide Deck** | 16:9 Widescreen PPTX | [`demo_video/demo_video_slides.pptx`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/demo_video/demo_video_slides.pptx) | 6-slide presentation deck supporting the 3-minute video recording |
-| **AI Evaluation Summary** | Rubric & Revision Report | [`tasks/Challenge_5_AI_Evaluation_Summary.md`](file:///c:/Users/VinceNguyen/.gemini/antigravity/GlassShield/tasks/Challenge_5_AI_Evaluation_Summary.md) | Documented AI review cycle, criterion scoring (96/100), and verification ledger |
-
----
 
 ## 📖 Executive Summary & Core Philosophy
 
@@ -259,24 +245,6 @@ Open your browser at `http://localhost:8501`:
 
 ---
 
-### Step 5: Regenerate Project Poster (48 × 36 Inches)
-```powershell
-# Generate 48x36 inch single-page PDF poster
-.\.venv\Scripts\python poster/generate_poster_pdf.py
-
-# Generate 48x36 inch editable PowerPoint poster
-.\.venv\Scripts\python poster/generate_poster_pptx.py
-```
-*Outputs*: Saved to `poster/glassshield_poster_48x36.pdf` and `poster/glassshield_poster_48x36.pptx`.
-
----
-
-### Step 6: Regenerate Demo Video Slides (16:9 Widescreen)
-```powershell
-.\.venv\Scripts\python demo_video/generate_demo_video_slides_pptx.py
-```
-*Outputs*: Saved to `demo_video/demo_video_slides.pptx`.
-
 ---
 
 ## 📁 Repository Directory Structure
@@ -290,41 +258,34 @@ GlassShield/
 ├── glassshield_knowledge_graph.cypher  # Baseline 25-node / 27-edge Neo4j KG
 ├── glassshield_knowledge_graph_rag.cypher # Extended 37-node / 56-edge GraphRAG KG
 │
-├── poster/                             # [CHALLENGE 5 DELIVERABLE A]
-│   ├── glassshield_poster_48x36.pdf    # 48x36-inch single-page landscape print PDF
-│   ├── glassshield_poster_48x36.pptx   # 48x36-inch editable PowerPoint poster template
-│   ├── generate_poster_pdf.py          # Python script compiling the PDF poster via Matplotlib
-│   ├── generate_poster_pptx.py         # Python script compiling the PPTX poster via python-pptx
-│   └── README.md                       # Poster printing & Hack-A-Roo submission guide
-│
-├── demo_video/                         # [CHALLENGE 5 DELIVERABLE B]
-│   ├── demo_video_script_storyboard.md # Second-by-second 3-minute video production script
-│   ├── demo_recording_guide.md         # OBS Studio & Windows Game Bar recording guide
-│   ├── demo_video_slides.pptx          # 16:9 widescreen presentation deck for video recording
-│   └── generate_demo_video_slides_pptx.py # Python script compiling the video slide deck
-│
-├── tasks/                              # Assignment reports & benchmarks
-│   ├── Challenge 5 - Project Poster, Demo Video, Github # Assignment specification
-│   ├── Challenge_5_AI_Evaluation_Summary.md # [CHALLENGE 5 DELIVERABLE D] AI review report
-│   ├── Challenge_4_Human_AI_Co_Design_Report.md # Full Challenge 4 academic report
-│   └── CS5542_GraphRAG_GNN_Lab.ipynb  # Interactive Jupyter Lab notebook
-│
 ├── layer_01_sensors_privacy/           # Layer 01: On-Device Vision Engine
 │   ├── privacy_engine.py               # EgoBlur Gen1 JIT inference, NMS, OpenCV masking
 │   ├── policy_rag.py                   # In-memory keyword & semantic legal policy retriever
 │   ├── privacy_knowledge_base.json     # 9 regulatory policy frameworks
 │   └── sample_data_loader.py           # 6 synthetic egocentric benchmark scenarios
 │
+├── layer_02_transport_guard/           # Layer 02: Transport Guard & mTLS Framing
+│   ├── transport_guard.py              # Schema validation & TelemetryTuple serialization
+│   └── __init__.py                     # Package exports
+│
 ├── layer_03_network_anomalies/         # Layer 03: Big Data Analytics & Graph ML
 │   ├── challenge_4_analytics_pipeline.py # PySpark, Louvain, K-Means & Isolation Forest
 │   ├── gnn_enhanced_graphrag.py        # 2-layer GraphSAGE message passing & benchmark
 │   └── meta_activity_engine.py         # Encrypted packet token flow profiling & bursts
 │
-├── layer_04_vlm_agent/                 # Layer 04: Cloud VLM & Explainability
-│   ├── ai_explainer.py                 # Grounded narrative synthesis, uncertainty & Action Gate
+├── layer_04_vlm_agent/                 # Layer 04: Cloud VLM & Grounded GraphRAG
+│   ├── ai_explainer.py                 # Grounded narrative synthesis & uncertainty
 │   └── graphrag_engine.py              # Neo4j GraphRAG query execution
 │
-├── telemetry/                          # Layer 02 & 06: Data Contracts & Audit Logging
+├── layer_05_action_gate/               # Layer 05: Action Gate & Safety Boundary
+│   ├── action_gate.py                  # ALLOW / BLOCK / CONFIRM & calibrated abstention
+│   └── __init__.py                     # Package exports
+│
+├── layer_06_human_feedback/            # Layer 06: Human-in-the-Loop Feedback Store
+│   ├── feedback_engine.py              # Proctor review, FPR calculation & active learning
+│   └── __init__.py                     # Package exports
+│
+├── telemetry/                          # Standardized Cross-Layer Telemetry
 │   └── telemetry_logger.py             # TelemetryTuple contract validator & JSONL logger
 │
 ├── tests/                              # Automated Test Suite (13/13 Passing)
