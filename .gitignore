@@ -52,3 +52,8 @@ presentation/
 
 # Telemetry event logs (runtime generated)
 telemetry/*.jsonl
+# Poster and presentation binaries (kept local per user instruction)
+poster/
+*.pptx
+*.pdf
+GlassShield.code-workspace
